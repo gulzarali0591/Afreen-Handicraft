@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afreen Admin | Premium Cloud Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .gold-accent { color: #C5A059; }
+        .bg-navy { background-color: #0F172A; }
+        .border-gold { border-color: #C5A059; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <div id="loginOverlay" class="fixed inset-0 bg-navy z-[200] flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md border-b-8 border-gold">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold tracking-tighter text-navy">AFREEN <span class="gold-accent">ADMIN</span></h1>
+                <p class="text-gray-400 text-sm mt-2 font-medium italic">Premium Trophy Management</p>
+            </div>
+            <div class="space-y-4">
+                <div class="relative">
+                    <i class="fas fa-user absolute left-3 top-4 text-gray-400"></i>
+                    <input type="text" id="user" placeholder="Username" class="w-full pl-10 p-3 border rounded-xl outline-none focus:ring-2 ring-yellow-500">
+                </div>
+                <div class="relative">
+                    <i class="fas fa-lock absolute left-3 top-4 text-gray-400"></i>
+                    <input type="password" id="pass" placeholder="Password" class="w-full pl-10 p-3 border rounded-xl outline-none focus:ring-2 ring-yellow-500">
+                </div>
+                <button onclick="checkLogin()" class="w-full bg-navy text-white py-4 rounded-xl font-bold hover:shadow-lg transition-all active:scale-95 uppercase tracking-widest">
+                    Enter Dashboard
+                </button>
+            </div>
+            <p id="error" class="text-red-500 text-sm mt-4 text-center hidden font-semibold">Galat Username ya Password!</p>
+        </div>
+    </div>
+
+    <div id="adminContent" class="hidden">
+        <nav class="bg-navy p-4 text-white flex justify-between items-center shadow-xl sticky top-0 z-50">
+            <div class="flex flex-col">
+                <span class="text-xl font-bold tracking-tighter">AFREEN</span>
+                <span class="text-[10px] gold-accent uppercase font-black tracking-widest leading-none">Handicraft</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="hidden md:block text-xs font-bold text-gray-400 uppercase">Moradabad Factory</span>
+                <button onclick="location.reload()" class="bg-red-600/20 text-red-500 border border-red-500/50 px-4 py-1.5 rounded-full text-xs font-bold hover:bg-red-600 hover:text-white transition">Logout</button>
+            </div>
+        </nav>
+
+        <div class="container mx-auto p-4 md:p-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border-t-4 border-blue-500">
+                    <div class="text-gray-400 text-[10px] uppercase font-bold mb-1">Total Items</div>
+                    <div id="statProducts" class="text-3xl font-bold text-navy italic">0</div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border-t-4 border-yellow-500">
+                    <div class="text-gray-400 text-[10px] uppercase font-bold mb-1">Active Categories</div>
+                    <div id="statCats" class="text-3xl font-bold text-navy italic">0</div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border-t-4 border-green-500">
+                    <div class="text-gray-400 text-[10px] uppercase font-bold mb-1">Cloud Status</div>
+                    <div class="text-sm font-bold text-green-600 flex items-center mt-2">
+                        <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span> SYNCED
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded-3xl shadow-md border border-gray-100">
+                        <h2 class="text-lg font-bold mb-4 flex items-center text-navy"><i class="fas fa-tags mr-2 gold-accent"></i> 1. Manage Categories</h2>
+                        <div class="flex gap-2">
+                            <input type="text" id="catInp" placeholder="New category..." class="w-full p-2.5 border rounded-xl outline-none focus:ring-1 ring-navy">
+                            <button onclick="addCategory()" class="bg-navy text-white px-5 rounded-xl font-bold">+</button>
+                        </div>
+                        <ul id="catList" class="mt-4 space-y-2 max-h-40 overflow-y-auto pr-2 scrollbar-hide"></ul>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-3xl shadow-md border border-gray-100">
+                        <h2 class="text-lg font-bold mb-4 flex items-center text-navy"><i class="fas fa-plus-circle mr-2 gold-accent"></i> 2. Add New Product</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Trophy Title</label>
+                                <input type="text" id="pTitle" placeholder="e.g. Gold School Trophy" class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:ring-1 ring-navy">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Price / Tag</label>
+                                <input type="text" id="pPrice" placeholder="e.g. ?450" class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:ring-1 ring-navy">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Image URL</label>
+                                <input type="text" id="pImg" placeholder="Link to photo" class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:ring-1 ring-navy">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Select Category</label>
+                                <select id="pCatSelect" class="w-full p-3 bg-gray-50 border rounded-xl outline-none capitalize"></select>
+                            </div>
+                            <button onclick="addProduct()" class="w-full bg-navy text-white py-4 rounded-xl font-bold shadow-lg hover:shadow-2xl transition uppercase">Upload to Website</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 bg-white p-6 rounded-3xl shadow-md border border-gray-100 min-h-[500px]">
+                    <div class="flex justify-between items-center mb-6 border-b pb-4">
+                        <h2 class="text-xl font-bold text-navy italic">Live Store Inventory</h2>
+                        <span class="text-[10px] bg-slate-100 px-3 py-1 rounded-full font-bold">REALTIME DATA</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="text-gray-400 text-[10px] uppercase font-bold tracking-widest border-b">
+                                <tr>
+                                    <th class="pb-4">Product</th>
+                                    <th class="pb-4">Category</th>
+                                    <th class="pb-4">Price</th>
+                                    <th class="pb-4 text-right">Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productTableBody" class="divide-y divide-gray-50"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-10 right-10 bg-green-600 text-white px-6 py-3 rounded-full font-bold shadow-2xl hidden z-[300] animate-bounce">
+        <i class="fas fa-check-circle mr-2"></i> Cloud Updated Successfully!
+    </div>
+
+    <script>
+        // FIREBASE SETUP
+        const firebaseConfig = {
+            apiKey: "AIzaSyA5O9dxjps5teBAYUlqK0wL8vu8JSDm5ic",
+            authDomain: "afreen-handicrafts.firebaseapp.com",
+            projectId: "afreen-handicrafts",
+            storageBucket: "afreen-handicrafts.firebasestorage.app",
+            messagingSenderId: "480238292202",
+            appId: "1:480238292202:web:bb6060e7b28454ed179b93",
+            measurementId: "G-V1NK0G5K4D",
+            databaseURL: "https://afreen-handicrafts-default-rtdb.firebaseio.com/"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 1. LOGIN SECURITY
+        window.checkLogin = function() {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            if(u === "Anwer123" && p === "@Anwer123") {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('adminContent').classList.remove('hidden');
+                startSync();
+            } else {
+                document.getElementById('error').classList.remove('hidden');
+            }
+        };
+
+        // 2. REALTIME SYNC
+        function startSync() {
+            // Sync Categories
+            db.ref('categories').on('value', (snap) => {
+                const data = snap.val() || {};
+                const list = document.getElementById('catList');
+                const select = document.getElementById('pCatSelect');
+                list.innerHTML = ""; select.innerHTML = "";
+                let count = 0;
+                for(let id in data) {
+                    list.innerHTML += `
+                        <li class="flex justify-between items-center bg-gray-50 p-2.5 rounded-xl text-sm border border-gray-100">
+                            <span class="font-bold text-navy capitalize">${data[id]}</span>
+                            <button onclick="del('categories/${id}')" class="text-red-400 hover:text-red-600">×</button>
+                        </li>`;
+                    select.innerHTML += `<option value="${data[id].toLowerCase()}">${data[id]}</option>`;
+                    count++;
+                }
+                document.getElementById('statCats').innerText = count;
+            });
+
+            // Sync Products
+            db.ref('products').on('value', (snap) => {
+                const data = snap.val() || {};
+                const body = document.getElementById('productTableBody');
+                body.innerHTML = "";
+                let count = 0;
+                for(let id in data) {
+                    let p = data[id];
+                    body.innerHTML += `
+                        <tr class="group hover:bg-slate-50 transition-all">
+                            <td class="py-4 flex items-center">
+                                <img src="${p.img}" class="w-10 h-10 rounded-lg object-cover mr-3 shadow-sm">
+                                <span class="font-bold text-navy text-sm">${p.title}</span>
+                            </td>
+                            <td class="py-4 text-xs font-bold uppercase text-gray-400 tracking-tighter">${p.cat}</td>
+                            <td class="py-4 font-black text-green-600">${p.price}</td>
+                            <td class="py-4 text-right">
+                                <button onclick="del('products/${id}')" class="text-red-400 hover:text-red-600 p-2"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        </tr>`;
+                    count++;
+                }
+                document.getElementById('statProducts').innerText = count;
+            });
+        }
+
+        // 3. ACTIONS
+        window.addCategory = function() {
+            const val = document.getElementById('catInp').value.trim();
+            if(val) {
+                db.ref('categories').push(val).then(() => {
+                    document.getElementById('catInp').value = "";
+                    showToast();
+                }).catch(e => alert("Permission Denied! Check Firebase Rules."));
+            }
+        };
+
+        window.addProduct = function() {
+            const t = document.getElementById('pTitle').value;
+            const p = document.getElementById('pPrice').value;
+            const i = document.getElementById('pImg').value;
+            const c = document.getElementById('pCatSelect').value;
+
+            if(t && p && i && c) {
+                db.ref('products').push({title:t, price:p, img:i, cat:c}).then(() => {
+                    document.getElementById('pTitle').value = "";
+                    document.getElementById('pPrice').value = "";
+                    document.getElementById('pImg').value = "";
+                    showToast();
+                });
+            } else {
+                alert("Bhai, saari details bhariye!");
+            }
+        };
+
+        window.del = function(path) {
+            if(confirm("Confirm Delete from Cloud?")) db.ref(path).remove().then(showToast);
+        };
+
+        function showToast() {
+            const t = document.getElementById('toast');
+            t.classList.remove('hidden');
+            setTimeout(() => t.classList.add('hidden'), 2000);
+        }
+    </script>
+</body>
+</html>
