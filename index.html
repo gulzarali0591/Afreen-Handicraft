@@ -84,8 +84,8 @@
     <div class="sticky top-[68px] md:top-[80px] z-40 bg-slate-50/95 backdrop-blur-sm border-b overflow-hidden">
         <div class="container mx-auto px-4 py-4">
             <div id="category-container" class="category-scroll flex space-x-2 md:justify-center overflow-x-auto pb-2">
-                <button onclick="filterItems('all', this)" class="cat-btn active border px-6 py-2 rounded-full text-xs md:text-sm font-bold whitespace-nowrap transition shadow-sm">All Designs</button>
-                </div>
+                <button onclick="filterItems('all', this)" class="cat-btn active border px-6 py-2 rounded-full text-xs md:text-sm font-bold whitespace-nowrap shadow-sm">All Designs</button>
+            </div>
         </div>
     </div>
 
@@ -97,6 +97,22 @@
             </div>
         </div>
     </main>
+
+    <div id="productModal" class="fixed inset-0 bg-black/90 hidden z-[110] flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-3xl overflow-hidden relative shadow-2xl">
+            <button onclick="closeProductModal()" class="absolute top-4 right-4 bg-navy/50 text-white w-10 h-10 rounded-full z-10 flex items-center justify-center text-xl">&times;</button>
+            <div class="aspect-square bg-slate-100">
+                <img id="modalImg" src="" class="w-full h-full object-contain p-4">
+            </div>
+            <div class="p-6 text-center">
+                <h2 id="modalTitle" class="text-2xl font-bold text-navy mb-2"></h2>
+                <div id="modalPrice" class="text-orange-600 font-black text-xl mb-6"></div>
+                <button id="modalOrderBtn" onclick="" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-green-700 shadow-lg flex justify-center items-center">
+                    <i class="fab fa-whatsapp mr-3 text-2xl"></i> ORDER ON WHATSAPP
+                </button>
+            </div>
+        </div>
+    </div>
 
     <div id="bulkModal" class="fixed inset-0 bg-black/80 hidden z-[100] flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-xl rounded-2xl overflow-hidden shadow-2xl">
@@ -151,25 +167,28 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 1. DYNAMIC CATEGORIES LOAD
+        // 1. DYNAMIC CATEGORIES LOAD (Fixed Slug Logic)
         db.ref('categories').on('value', (snap) => {
             const data = snap.val() || {};
             const container = document.getElementById('category-container');
             container.innerHTML = `<button onclick="filterItems('all', this)" class="cat-btn active border px-6 py-2 rounded-full text-xs md:text-sm font-bold whitespace-nowrap shadow-sm">All Designs</button>`;
             for(let id in data) {
-                container.innerHTML += `<button onclick="filterItems('${data[id].toLowerCase()}', this)" class="cat-btn bg-white border px-6 py-2 rounded-full text-xs md:text-sm font-bold whitespace-nowrap hover:bg-slate-100 transition">${data[id]}</button>`;
+                let slug = data[id].toLowerCase().trim().replace(/\s+/g, '-');
+                container.innerHTML += `<button onclick="filterItems('${slug}', this)" class="cat-btn bg-white border px-6 py-2 rounded-full text-xs md:text-sm font-bold whitespace-nowrap hover:bg-slate-100 transition">${data[id]}</button>`;
             }
         });
 
-        // 2. DYNAMIC PRODUCTS LOAD
+        // 2. DYNAMIC PRODUCTS LOAD (Fixed Class Logic)
         db.ref('products').on('value', (snap) => {
             const data = snap.val() || {};
             const container = document.getElementById('product-container');
             container.innerHTML = "";
             for(let id in data) {
                 let p = data[id];
+                let slug = p.cat.toLowerCase().trim().replace(/\s+/g, '-');
                 container.innerHTML += `
-                    <div class="product-card filter-item ${p.cat} bg-white rounded-xl shadow-sm border hover:shadow-xl transition-all group overflow-hidden">
+                    <div class="product-card filter-item ${slug} bg-white rounded-xl shadow-sm border hover:shadow-xl transition-all group overflow-hidden cursor-pointer" 
+                         onclick="viewProduct('${p.title}', '${p.price}', '${p.img}')">
                         <div class="relative overflow-hidden aspect-[4/5] bg-slate-100">
                             <img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                             <div class="absolute top-2 left-2 bg-navy text-white text-[8px] md:text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">${p.cat}</div>
@@ -177,7 +196,7 @@
                         <div class="p-2 md:p-4 text-center">
                             <h3 class="font-bold text-slate-800 mb-1 leading-tight">${p.title}</h3>
                             <div class="price text-orange-600 font-bold mb-2 text-xs md:text-base">${p.price}</div>
-                            <button onclick="openDirectOrder('${p.title}')" class="order-btn w-full bg-navy text-white py-2 rounded-lg font-bold uppercase transition hover:bg-slate-800">Order Now</button>
+                            <button class="order-btn w-full bg-navy text-white py-2 rounded-lg font-bold uppercase transition hover:bg-slate-800">Details</button>
                         </div>
                     </div>`;
             }
@@ -186,17 +205,30 @@
         // ACTIONS
         function filterItems(category, btn) {
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active', 'bg-navy', 'text-white'));
-            btn.classList.add('active');
+            btn.classList.add('active', 'bg-navy', 'text-white');
             document.querySelectorAll('.filter-item').forEach(item => {
                 item.classList.add('hidden');
                 if (category === 'all' || item.classList.contains(category)) item.classList.remove('hidden');
             });
         }
 
+        // Modal Logic for Single Product
+        function viewProduct(title, price, img) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalPrice').innerText = price;
+            document.getElementById('modalImg').src = img;
+            document.getElementById('modalOrderBtn').setAttribute('onclick', `openDirectOrder('${title}')`);
+            document.getElementById('productModal').classList.remove('hidden');
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.add('hidden');
+        }
+
         function toggleBulkModal() { document.getElementById('bulkModal').classList.toggle('hidden'); }
 
         function openDirectOrder(product) {
-            window.open(`https://wa.me/919756877652?text=*NEW ORDER*%0AProduct: ${product}`, '_blank');
+            window.open(`https://wa.me/919756877652?text=*NEW ORDER ENQUIRY*%0A*Product:* ${product}%0A*Brand:* Afreen Handicraft`, '_blank');
         }
 
         function sendBulk() {
@@ -207,3 +239,4 @@
     </script>
 </body>
 </html>
+
