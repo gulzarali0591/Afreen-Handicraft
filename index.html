@@ -110,7 +110,7 @@
                     About <span class="gold-accent">Afreen Handicraft</span> Moradabad
                 </h2>
                 <p class="text-slate-600 leading-relaxed mb-8 text-lg">
-                    Moradabad, jise "Pital Nagri" bhi kaha jata hai, wahan se **Afreen Handicraft** pichle kai saalon se behtareen quality ki trophies aur awards bana raha hai. Hum custom manufacturing mein expert hain aur poore India mein wholesale prices par supply karte hain.
+                  Located in the heart of Moradabad, Afreen Handicraft is a leading manufacturer of high-quality custom trophies and awards. For years, we have been delivering top-tier craftsmanship and premium recognition products across India at unbeatable wholesale prices. From school events to major sports tournaments, we manufacture excellence to honor your success..
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left mt-12">
                     <div class="p-6 bg-slate-50 rounded-2xl border-l-4 border-gold">
@@ -141,7 +141,7 @@
             </div>
             <div class="p-6 text-center">
                 <h2 id="modalTitle" class="text-2xl font-bold text-navy mb-2"></h2>
-                <div id="modalPrice" class="text-orange-600 font-black text-xl mb-6"></div>
+                <div id="modalPrice" class="text-orange-600 font-bold text-xl mb-6"></div>
                 <button id="modalOrderBtn" onclick="" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-green-700 shadow-lg flex justify-center items-center">
                     <i class="fab fa-whatsapp mr-3 text-2xl"></i> ORDER ON WHATSAPP
                 </button>
@@ -170,7 +170,7 @@
                 <h3 class="text-2xl font-bold mb-4 uppercase tracking-tighter">AFREEN HANDICRAFT</h3>
                 <p class="text-slate-400 text-sm leading-relaxed mb-4">Premium Trophy & Award Manufacturer in Moradabad, India.</p>
                 <div class="flex space-x-4 text-2xl">
-                    <a href="https://instagram.com/afreen_hand_icrafts" class="text-pink-500"><i class="fab fa-instagram"></i></a>
+                    <a href="https://instagram.com/afreen_handicrafts" class="text-pink-500"><i class="fab fa-instagram"></i></a>
                     <a href="https://wa.me/919756877652" class="text-green-500"><i class="fab fa-whatsapp"></i></a>
                 </div>
             </div>
@@ -202,7 +202,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 1. DYNAMIC CATEGORIES LOAD (Fixed Slug Logic)
+        // 1. DYNAMIC CATEGORIES LOAD
         db.ref('categories').on('value', (snap) => {
             const data = snap.val() || {};
             const container = document.getElementById('category-container');
@@ -213,7 +213,7 @@
             }
         });
 
-        // 2. DYNAMIC PRODUCTS LOAD (Updated with SEO Alt Tags)
+        // 2. DYNAMIC PRODUCTS LOAD (Changed Price layout to Item Code layout)
         db.ref('products').on('value', (snap) => {
             const data = snap.val() || {};
             const container = document.getElementById('product-container');
@@ -230,7 +230,7 @@
                         </div>
                         <div class="p-2 md:p-4 text-center">
                             <h3 class="font-bold text-slate-800 mb-1 leading-tight">${p.title}</h3>
-                            <div class="price text-orange-600 font-bold mb-2 text-xs md:text-base">${p.price}</div>
+                            <div class="price text-orange-600 font-bold mb-2 text-[10px] md:text-sm">Code: ${p.price}</div>
                             <button class="order-btn w-full bg-navy text-white py-2 rounded-lg font-bold uppercase transition hover:bg-slate-800">Details</button>
                         </div>
                     </div>`;
@@ -247,12 +247,12 @@
             });
         }
 
-        // Modal Logic for Single Product
+        // Modal Logic for Single Product (Updated to hold Item Code correctly)
         function viewProduct(title, price, img) {
             document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalPrice').innerText = price;
+            document.getElementById('modalPrice').innerText = "Item Code: " + price;
             document.getElementById('modalImg').src = img;
-            document.getElementById('modalOrderBtn').setAttribute('onclick', `openDirectOrder('${title}')`);
+            document.getElementById('modalOrderBtn').setAttribute('onclick', `openDirectOrder('${title.replace(/'/g, "\\'")}', '${price.replace(/'/g, "\\'")}')`);
             document.getElementById('productModal').classList.remove('hidden');
         }
 
@@ -262,17 +262,21 @@
 
         function toggleBulkModal() { document.getElementById('bulkModal').classList.toggle('hidden'); }
 
-        function openDirectOrder(product) {
-            window.open(`https://wa.me/919756877652?text=*NEW ORDER ENQUIRY*%0A*Product:* ${product}%0A*Brand:* Afreen Handicraft`, '_blank');
+        // WhatsApp redirect updated to beautifully format Product Name and Item Code
+        function openDirectOrder(product, itemCode) {
+            const message = `*NEW ORDER ENQUIRY*\n\n*Product Name:* ${product}\n*Item Code:* ${itemCode}\n\n*Brand:* Afreen Handicraft`;
+            window.open(`https://wa.me/919756877652?text=${encodeURIComponent(message)}`, '_blank');
         }
 
         function sendBulk() {
-            const msg = `*BULK ENQUIRY*%0AName: ${document.getElementById('bulkName').value}%0AWhatsApp: ${document.getElementById('bulkWhatsApp').value}%0AReq: ${document.getElementById('bulkReq').value}`;
-            window.open(`https://wa.me/919756877652?text=${encodeURIComponent(msg)}`, '_blank');
-            toggleBulkModal();
-        }
+    const name = document.getElementById('bulkName').value;
+    const whatsapp = document.getElementById('bulkWhatsApp').value;
+    const req = document.getElementById('bulkReq').value;
+    
+    const msg = `*BULK ENQUIRY*\n\n*Name:* ${name}\n*WhatsApp:* ${whatsapp}\n*Requirement:* ${req}`;
+    window.open(`https://wa.me/919756877652?text=${encodeURIComponent(msg)}`, '_blank');
+    toggleBulkModal();
+}
     </script>
 </body>
-</html>
-
-
+    </html>
