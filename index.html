@@ -55,7 +55,7 @@
                 <button onclick="toggleBulkModal()" class="text-orange-600 font-bold underline">Bulk Order Enquiries</button>
             </div>
             <div class="flex items-center space-x-4">
-                <a href="https://instagram.com/afreen_handicrafts" target="_blank" class="text-xl text-pink-600"><i class="fab fa-instagram"></i></a>
+                <a href="https://instagram.com/afreen_handicraft_" target="_blank" class="text-xl text-pink-600"><i class="fab fa-instagram"></i></a>
                 <a href="https://wa.me/919756877652" class="bg-green-600 text-white px-3 py-1.5 md:px-5 md:py-2 rounded-full text-xs md:text-sm font-bold flex items-center shadow-lg">
                     <i class="fab fa-whatsapp mr-2 text-lg"></i> <span class="hidden md:inline">Order Now</span>
                 </a>
@@ -170,7 +170,7 @@
                 <h3 class="text-2xl font-bold mb-4 uppercase tracking-tighter">AFREEN HANDICRAFT</h3>
                 <p class="text-slate-400 text-sm leading-relaxed mb-4">Premium Trophy & Award Manufacturer in Moradabad, India.</p>
                 <div class="flex space-x-4 text-2xl">
-                    <a href="https://instagram.com/afreen_handicrafts" class="text-pink-500"><i class="fab fa-instagram"></i></a>
+                    <a href="https://instagram.com/afreen_handicraft_" class="text-pink-500"><i class="fab fa-instagram"></i></a>
                     <a href="https://wa.me/919756877652" class="text-green-500"><i class="fab fa-whatsapp"></i></a>
                 </div>
             </div>
@@ -278,5 +278,28 @@
     toggleBulkModal();
 }
     </script>
+    <script>
+  window.addEventListener('DOMContentLoaded', function() {
+    // Page par sabhi elements mein '×' ya 'x' search karein
+    const allElements = document.querySelectorAll('span, button, div, a, p');
+    allElements.forEach(el => {
+      if ((el.innerText === '×' || el.innerText === 'x' || el.innerText === 'X') && el.children.length === 0) {
+        el.style.setProperty('background-color', '#ff0000', 'important');
+        el.style.setProperty('color', '#ffffff', 'important');
+        el.style.setProperty('width', '30px', 'important');
+        el.style.setProperty('height', '30px', 'important');
+        el.style.setProperty('display', 'inline-flex', 'important');
+        el.style.setProperty('align-items', 'center', 'important');
+        el.style.setProperty('justify-content', 'center', 'important');
+        el.style.setProperty('border-radius', '6px', 'important');
+        el.style.setProperty('font-weight', '900', 'important');
+        el.style.setProperty('font-size', '20px', 'important');
+        el.style.setProperty('box-shadow', '0 2px 6px rgba(0,0,0,0.5)', 'important');
+        el.style.setProperty('cursor', 'pointer', 'important');
+      }
+    });
+  });
+</script>
+
 </body>
     </html>
